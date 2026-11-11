@@ -2,8 +2,8 @@
     RootModule            = 'M365EntraAudit.psm1'
     ModuleVersion         = '0.1.0'
     GUID                  = '6f0a7c1e-3d52-4b8e-9a41-2c7d5e8b1f30'
-    Author                = 'Jijesh Puliyappottammal'
-    Copyright             = '(c) 2026 Jijesh Puliyappottammal. Released under the MIT licence.'
+    Author                = 'Puliyappottammal Jijesh'
+    Copyright             = '(c) 2026 Puliyappottammal Jijesh. Released under the MIT licence.'
     Description           = 'Read-only security audit for Microsoft 365 and Microsoft Entra ID using the Microsoft Graph PowerShell SDK. Reports MFA coverage, stale accounts, privileged role holders, guest users and Conditional Access gaps as an HTML report and CSV files.'
     PowerShellVersion     = '7.2'
     CompatiblePSEditions  = @('Core')
