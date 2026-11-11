@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en-GB"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Microsoft 365 and Entra ID security audit</title>
+<style>:root{--bg:#f5f6f8;--surface:#fff;--text:#1b2430;--muted:#5b6675;--line:#dfe3ea;--accent:#2b4c7e;--accent-soft:#e8eef7;
+--high:#b3261e;--high-bg:#fdeceb;--med:#8a5a00;--med-bg:#fff3d6;--low:#1f5f99;--low-bg:#e3f0fb;--info:#4a5563;--info-bg:#eceff3;--ok:#1d6b3a;--ok-bg:#e2f4e8;--bar:#2b4c7e;--track:#e3e7ee}
+@media (prefers-color-scheme:dark){:root{--bg:#10151c;--surface:#171e28;--text:#e6eaf0;--muted:#9aa6b6;--line:#2a3441;--accent:#8fb4ee;--accent-soft:#1e2b40;
+--high:#ff9b94;--high-bg:#3a1c1b;--med:#f3c566;--med-bg:#37290d;--low:#8cc4f5;--low-bg:#162a3d;--info:#b4bfce;--info-bg:#232c39;--ok:#7fd7a0;--ok-bg:#16301f;--bar:#8fb4ee;--track:#2a3441}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+.wrap{max-width:1080px;margin:0 auto;padding:0 16px 48px}
+header.top{background:var(--accent);color:#fff;padding:28px 0 24px;margin-bottom:24px}
+header.top .wrap{padding-bottom:0}
+header.top h1{margin:0 0 4px;font-size:1.6rem;font-weight:650;letter-spacing:-.01em}
+header.top p{margin:0;opacity:.9}
+.meta{display:flex;flex-wrap:wrap;gap:8px 20px;margin-top:14px;font-size:.85rem;opacity:.92}
+.badge{display:inline-block;border-radius:999px;padding:2px 10px;font-size:.78rem;font-weight:600}
+.badge.demo{background:#ffe08a;color:#4a3500}
+.badge.live{background:#d3f0dc;color:#14502a}
+h2{font-size:1.2rem;margin:36px 0 12px;padding-bottom:6px;border-bottom:2px solid var(--line)}
+h3{font-size:1rem;margin:20px 0 8px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+.card .n{font-size:1.9rem;font-weight:700;line-height:1.1}
+.card .l{color:var(--muted);font-size:.82rem;margin-top:4px}
+.card.sev-High .n{color:var(--high)}.card.sev-Medium .n{color:var(--med)}.card.sev-Low .n{color:var(--low)}.card.sev-Info .n{color:var(--info)}
+.note{background:var(--accent-soft);border-left:4px solid var(--accent);padding:10px 14px;border-radius:6px;margin:14px 0;font-size:.9rem}
+.sev{display:inline-block;min-width:64px;text-align:center;border-radius:6px;padding:1px 8px;font-size:.76rem;font-weight:700;text-transform:uppercase;letter-spacing:.03em}
+.sev.High{background:var(--high-bg);color:var(--high)}.sev.Medium{background:var(--med-bg);color:var(--med)}
+.sev.Low{background:var(--low-bg);color:var(--low)}.sev.Info{background:var(--info-bg);color:var(--info)}
+.pass{background:var(--ok-bg);color:var(--ok)}.fail{background:var(--high-bg);color:var(--high)}
+.pill{display:inline-block;border-radius:6px;padding:1px 8px;font-size:.76rem;font-weight:700}
+article.finding{background:var(--surface);border:1px solid var(--line);border-left-width:5px;border-radius:8px;padding:14px 16px;margin:12px 0}
+article.finding.High{border-left-color:var(--high)}article.finding.Medium{border-left-color:var(--med)}
+article.finding.Low{border-left-color:var(--low)}article.finding.Info{border-left-color:var(--info)}
+article.finding h3{margin:6px 0 4px}
+.fid{color:var(--muted);font-size:.8rem;margin-left:8px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.cnt{color:var(--muted);font-size:.85rem;margin-left:8px}
+.detail{margin:4px 0 8px}
+.fix{margin:8px 0}
+.fix b,.maps b{font-size:.8rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+details.maps{margin-top:8px;font-size:.88rem}
+details.maps summary{cursor:pointer;color:var(--accent);font-weight:600}
+details.maps dl{margin:8px 0 0;display:grid;grid-template-columns:150px 1fr;gap:6px 14px}
+details.maps dt{font-weight:600;color:var(--muted)}details.maps dd{margin:0}
+.tablewrap{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:8px}
+table{border-collapse:collapse;width:100%;font-size:.86rem}
+th,td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{background:var(--accent-soft);font-weight:650;white-space:nowrap}
+tr:last-child td{border-bottom:0}
+td.num{text-align:right;font-variant-numeric:tabular-nums}
+.bar{height:14px;background:var(--track);border-radius:7px;overflow:hidden;margin:6px 0}
+.bar>span{display:block;height:100%;background:var(--bar)}
+.kv{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:6px 24px;margin:10px 0}
+.kv div{display:flex;justify-content:space-between;border-bottom:1px dotted var(--line);padding:3px 0}
+.kv span:first-child{color:var(--muted)}
+.small{font-size:.82rem;color:var(--muted)}
+.nowrap{white-space:nowrap}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.82rem}
+footer{margin-top:40px;font-size:.82rem;color:var(--muted);border-top:1px solid var(--line);padding-top:14px}
+@media (max-width:600px){details.maps dl{grid-template-columns:1fr}header.top h1{font-size:1.3rem}}
+@media print{body{background:#fff}header.top{background:#fff;color:#000;border-bottom:2px solid #000}details.maps{display:block}.card,article.finding{break-inside:avoid}}</style></head><body>
+<header class="top"><div class="wrap">
+<h1>Microsoft 365 and Entra ID security audit</h1>
+<p>Read-only review of identity configuration: MFA, stale accounts, privileged roles, guests and Conditional Access.</p>
+<div class="meta"><span><span class="badge demo">DEMO: synthetic data</span></span><span>Tenant: Northwind Traders (synthetic demo data)</span><span>Generated: 2026-11-11 12:46 (UTC+00:00)</span><span>M365EntraAudit 0.1.0</span></div>
+</div></header><main class="wrap">
+<div class="note"><b>Demo report.</b> Every user, domain and policy in this report is synthetic, generated for illustration around the fictional organisation Northwind Traders (northwind.example). It does not describe a real tenant.</div>
+<h2>Summary</h2><div class="cards">
+<div class="card sev-High"><div class="n">4</div><div class="l">High findings</div></div>
+<div class="card sev-Medium"><div class="n">5</div><div class="l">Medium findings</div></div>
+<div class="card sev-Low"><div class="n">8</div><div class="l">Low findings</div></div>
+<div class="card sev-Info"><div class="n">0</div><div class="l">Info findings</div></div>
+</div>
+<div class="cards" style="margin-top:12px">
+<div class="card"><div class="n">92.2%</div><div class="l">Members with an MFA method registered</div></div>
+<div class="card"><div class="n">2</div><div class="l">Administrators without MFA</div></div>
+<div class="card"><div class="n">15</div><div class="l">Enabled members inactive or never used</div></div>
+<div class="card"><div class="n">5</div><div class="l">Permanent Global Administrators (excl. emergency)</div></div>
+<div class="card"><div class="n">36</div><div class="l">Guest accounts</div></div>
+<div class="card"><div class="n">3/4</div><div class="l">Conditional Access checks passed</div></div>
+</div>
+<h2>Findings</h2>
+<p class="small">Sorted by severity. Severity is a triage default, not a risk score. Adjust it to your own context.</p>
+<article class="finding High">
+<div><span class="sev High">High</span><span class="fid">CA-003</span><span class="cnt">Conditional Access &middot; 1 affected</span></div>
+<h3>No enforced Conditional Access policy requires MFA for all users</h3>
+<p class="detail">No enforced policy found. Present but not enforcing: CA003 Require MFA for all users (enabledForReportingButNotEnforced).</p>
+<p class="fix"><b>What to do</b><br>Create a policy that requires MFA for all users and all cloud apps, excluding only emergency access accounts. Use report-only mode first.</p>
+<details class="maps"><summary>How this maps to common frameworks</summary><dl>
+<dt>Zero Trust</dt><dd>Verify explicitly: apply strong authentication to every sign-in, not only some.</dd>
+<dt>Cyber Essentials</dt><dd>User access control: multi-factor authentication for all users of cloud services, enforced by policy.</dd>
+<dt>CIS-style control</dt><dd>Conditional Access: require MFA for all users.</dd>
+</dl></details></article>
+<article class="finding High">
+<div><span class="sev High">High</span><span class="fid">MFA-001</span><span class="cnt">MFA &middot; 2 affected</span></div>
+<h3>Administrator accounts have no MFA method registered</h3>
+<p class="detail">Administrators without MFA: helpdesk02@northwind.example, helpdesk03@northwind.example.</p>
+<p class="fix"><b>What to do</b><br>Register a phishing-resistant or app-based method for each administrator, then enforce MFA for administrator roles with a Conditional Access policy.</p>
+<details class="maps"><summary>How this maps to common frameworks</summary><dl>
+<dt>Zero Trust</dt><dd>Verify explicitly: the accounts that can change everything need the strongest proof of identity.</dd>
+<dt>Cyber Essentials</dt><dd>User access control: multi-factor authentication is expected for administrative accounts on cloud services.</dd>
+<dt>CIS-style control</dt><dd>Identity: require MFA for all administrative roles.</dd>
+</dl></details></article>
+<article class="finding High">
+<div><span class="sev High">High</span><span class="fid">PRIV-001</span><span class="cnt">Privileged roles &middot; 5 affected</span></div>
+<h3>Many permanent Global Administrators</h3>
+<p class="detail">5 permanent Global Administrators, excluding emergency accounts. Threshold: more than 4.</p>
+<p class="fix"><b>What to do</b><br>Reduce permanent Global Administrators to the minimum (Microsoft guidance suggests fewer than five). Use narrower roles for day-to-day work and make the rest eligible through PIM.</p>
+<details class="maps"><summary>How this maps to common frameworks</summary><dl>
+<dt>Zero Trust</dt><dd>Use least-privilege access: fewer people with the most powerful role means fewer high-value targets.</dd>
+<dt>Cyber Essentials</dt><dd>User access control: administrative rights should be limited to those who need them.</dd>
+<dt>CIS-style control</dt><dd>Identity: keep the number of Global Administrators small.</dd>
+</dl></details></article>
+<article class="finding High">
+<div><span class="sev High">High</span><span class="fid">PRIV-007</span><span class="cnt">Privileged roles &middot; 1 affected</span></div>
+<h3>Guest accounts hold privileged roles</h3>
+<p class="detail">Guest account(s) with a directory role: Beatriz Kowalski.</p>
+<p class="fix"><b>What to do</b><br>Confirm the business need. Where it is genuine, make the assignment eligible and time-limited, and make sure Conditional Access covers the guest.</p>
+<details class="maps"><summary>How this maps to common frameworks</summary><dl>
+<dt>Zero Trust</dt><dd>Use least-privilege access: external identities should rarely hold administrative power.</dd>
+<dt>Cyber Essentials</dt><dd>User access control: administrative rights for people outside the organisation need strong justification.</dd>
+<dt>CIS-style control</dt><dd>Identity: restrict privileged roles for guest users.</dd>
+</dl></details></article>
+<article class="finding Medium">
+<div><span class="sev Medium">Medium</span><span class="fid">GUEST-001</span><span class="cnt">Guest users &middot; 8 affected</span></div>
+<h3>Guest accounts with no recent sign-in</h3>
+<p class="detail">Enabled guests with no sign-in for more than 90 days, or none recorded.</p>
+<p class="fix"><b>What to do</b><br>Ask the internal sponsor whether the collaboration continues. Remove guests that are no longer needed, and consider access reviews to repeat this automatically.</p>
+<details class="maps"><summary>How this maps to common frameworks</summary><dl>
+<dt>Zero Trust</dt><dd>Assume breach: external accounts you no longer use still carry access you granted.</dd>
+<dt>Cyber Essentials</dt><dd>User access control: remove access for people who no longer need it, including external parties.</dd>
+<dt>CIS-style control</dt><dd>Identity: review guest users regularly.</dd>
+</dl></details></article>
+<article class="finding Medium">
+<div><span class="sev Medium">Medium</span><span class="fid">MFA-002</span><span class="cnt">MFA &middot; 12 affected</span></div>
+<h3>Member users have no MFA method registered</h3>
+<p class="detail">12 of 179 member users in the report (92.2% covered overall).</p>
+<p class="fix"><b>What to do</b><br>Run a registration campaign, then enforce MFA for all users with Conditional Access. Prioritise accounts that are enabled and licensed.</p>
+<details class="maps"><summary>How this maps to common frameworks</summary><dl>
+<dt>Zero Trust</dt><dd>Verify explicitly: a password alone is not enough evidence that the right person is signing in.</dd>
+<dt>Cyber Essentials</dt><dd>User access control: multi-factor authentication is expected for all users of cloud services.</dd>
+<dt>CIS-style control</dt><dd>Identity: ensure MFA is enabled for all users.</dd>
+</dl></details></article>
+<article class="finding Medium">
+<div><span class="sev Medium">Medium</span><span class="fid">PRIV-003</span><span class="cnt">Privileged roles &middot; 13 affected</span></div>
+<h3>Standing (permanent) assignments to high-privilege roles</h3>
+<p class="detail">13 user(s) hold at least one high-privilege role permanently (emergency accounts excluded).</p>
+<p class="fix"><b>What to do</b><br>Convert permanent assignments to PIM-eligible where possible, so privileges are active only when needed and each activation is logged.</p>
+<details class="maps"><summary>How this maps to common frameworks</summary><dl>
+<dt>Zero Trust</dt><dd>Use least-privilege access: grant privilege just in time, not all the time.</dd>
+<dt>Cyber Essentials</dt><dd>User access control: administrative rights should be time-limited where practical.</dd>
+<dt>CIS-style control</dt><dd>Identity: use just-in-time activation for privileged roles.</dd>
+</dl></details></article>
+<article class="finding Medium">
+<div><span class="sev Medium">Medium</span><span class="fid">PRIV-008</span><span class="cnt">Privileged roles &middot; 1 affected</span></div>
+<h3>Disabled accounts still hold role assignments</h3>
+<p class="detail">Disabled account(s) with an assignment: Former Admin (leaver).</p>
+<p class="fix"><b>What to do</b><br>Remove the role assignments from disabled accounts so re-enabling one by mistake does not restore administrator access.</p>
+<details class="maps"><summary>How this maps to common frameworks</summary><dl>
+<dt>Zero Trust</dt><dd>Use least-privilege access: no entitlements should remain on an identity that is switched off.</dd>
+<dt>Cyber Essentials</dt><dd>User access control: leaver processes should remove access completely.</dd>
+<dt>CIS-style control</dt><dd>Identity: remove privileges when accounts are disabled.</dd>
+</dl></details></article>
+<article class="finding Medium">
+<div><span class="sev Medium">Medium</span><span class="fid">STALE-001</span><span class="cnt">Stale accounts &middot; 11 affected</span></div>
+<h3>Enabled member accounts with no recent sign-in</h3>
+<p class="detail">No sign-in for more than 90 days. 11 of these hold a licence.</p>
+<p class="fix"><b>What to do</b><br>Confirm with line managers whether each account is still needed. Disable accounts that are not, then remove licences and delete after your retention period.</p>
+<details class="maps"><summary>How this maps to common frameworks</summary><dl>
+<dt>Zero Trust</dt><dd>Assume breach: an unused account is a quiet way in that nobody would notice being used.</dd>
+<dt>Cyber Essentials</dt><dd>User access control: accounts that are no longer required should be disabled or removed.</dd>
+<dt>CIS-style control</dt><dd>Identity: review and remove inactive accounts.</dd>
+</dl></details></article>
+<article class="finding Low">
+<div><span class="sev Low">Low</span><span class="fid">CA-004</span><span class="cnt">Conditional Access &middot; 2 affected</span></div>
+<h3>Conditional Access policies that are not enforcing</h3>
+<p class="detail">CA003 Require MFA for all users (enabledForReportingButNotEnforced); CA006 Block sign-in from unapproved countries (disabled)</p>
+<p class="fix"><b>What to do</b><br>Review policies in report-only or disabled state. Either finish testing and enable them, or remove them so the policy set reflects what is really enforced.</p>
+<details class="maps"><summary>How this maps to common frameworks</summary><dl>
+<dt>Zero Trust</dt><dd>Verify explicitly: a policy only protects you when it is switched on.</dd>
+<dt>Cyber Essentials</dt><dd>Secure configuration: settings should be applied, not just drafted.</dd>
+<dt>CIS-style control</dt><dd>Conditional Access: keep the enforced policy set current.</dd>
+</dl></details></article>
+<article class="finding Low">
+<div><span class="sev Low">Low</span><span class="fid">CA-005</span><span class="cnt">Conditional Access &middot; 3 affected</span></div>
+<h3>Enforced MFA or legacy-block policies have exclusions</h3>
+<p class="detail">Policies with user, group or role exclusions: CA001 Block legacy authentication; CA002 Require MFA for administrator roles; CA007 Require MFA for medium and high sign-in risk.</p>
+<p class="fix"><b>What to do</b><br>Keep exclusions to emergency access accounts only, document each one, and review them regularly. Every excluded account is outside the control.</p>
+<details class="maps"><summary>How this maps to common frameworks</summary><dl>
+<dt>Zero Trust</dt><dd>Verify explicitly: exceptions to a control should be few, justified and reviewed.</dd>
+<dt>Cyber Essentials</dt><dd>User access control: exceptions to access rules should be controlled and recorded.</dd>
+<dt>CIS-style control</dt><dd>Conditional Access: minimise policy exclusions.</dd>
+</dl></details></article>
+<article class="finding Low">
+<div><span class="sev Low">Low</span><span class="fid">GUEST-002</span><span class="cnt">Guest users &middot; 3 affected</span></div>
+<h3>Guest invitations pending for a long time</h3>
+<p class="detail">Invitations unaccepted for more than 30 days.</p>
+<p class="fix"><b>What to do</b><br>Cancel invitations that were never accepted or resend them if still wanted. Unaccepted invitations are clutter and can be redeemed later by the wrong person.</p>
+<details class="maps"><summary>How this maps to common frameworks</summary><dl>
+<dt>Zero Trust</dt><dd>Use least-privilege access: do not leave open offers of access lying around.</dd>
+<dt>Cyber Essentials</dt><dd>User access control: access that is not in use should not remain available.</dd>
+<dt>CIS-style control</dt><dd>Identity: clear stale guest invitations.</dd>
+</dl></details></article>
+<article class="finding Low">
+<div><span class="sev Low">Low</span><span class="fid">MFA-003</span><span class="cnt">MFA &middot; 9 affected</span></div>
+<h3>Users rely only on phone-based MFA (SMS or voice)</h3>
+<p class="detail">These users have only SMS or voice call registered as a second factor.</p>
+<p class="fix"><b>What to do</b><br>Encourage the authenticator app or a passkey. Phone-based methods remain better than no MFA, but are more exposed to SIM-swap and phishing attacks.</p>
+<details class="maps"><summary>How this maps to common frameworks</summary><dl>
+<dt>Zero Trust</dt><dd>Verify explicitly: prefer stronger, phishing-resistant factors where you can.</dd>
+<dt>Cyber Essentials</dt><dd>User access control: MFA should be a method that is hard for an attacker to intercept.</dd>
+<dt>CIS-style control</dt><dd>Identity: prefer authenticator-app or phishing-resistant methods over SMS and voice.</dd>
+</dl></details></article>
+<article class="finding Low">
+<div><span class="sev Low">Low</span><span class="fid">PRIV-005</span><span class="cnt">Privileged roles &middot; 1 affected</span></div>
+<h3>Directory roles granted through groups</h3>
+<p class="detail">Groups holding roles: Cloud Operations Admins.</p>
+<p class="fix"><b>What to do</b><br>Treat the owners and members of these groups as administrators. Restrict who can change membership and review it regularly.</p>
+<details class="maps"><summary>How this maps to common frameworks</summary><dl>
+<dt>Zero Trust</dt><dd>Use least-privilege access: access granted indirectly is easy to forget.</dd>
+<dt>Cyber Essentials</dt><dd>User access control: review who can grant administrative access.</dd>
+<dt>CIS-style control</dt><dd>Identity: protect and review role-assignable groups.</dd>
+</dl></details></article>
+<article class="finding Low">
+<div><span class="sev Low">Low</span><span class="fid">PRIV-006</span><span class="cnt">Privileged roles &middot; 1 affected</span></div>
+<h3>Service principals hold directory roles</h3>
+<p class="detail">Applications holding roles: northwind-provisioning-automation.</p>
+<p class="fix"><b>What to do</b><br>Confirm each application needs the role, that its credentials are managed and expire, and that someone owns it.</p>
+<details class="maps"><summary>How this maps to common frameworks</summary><dl>
+<dt>Zero Trust</dt><dd>Assume breach: non-human identities with admin roles are attractive targets.</dd>
+<dt>Cyber Essentials</dt><dd>User access control: all identities with administrative rights need an owner.</dd>
+<dt>CIS-style control</dt><dd>Identity: review application permissions and role assignments.</dd>
+</dl></details></article>
+<article class="finding Low">
+<div><span class="sev Low">Low</span><span class="fid">STALE-002</span><span class="cnt">Stale accounts &middot; 4 affected</span></div>
+<h3>Enabled member accounts that have never signed in</h3>
+<p class="detail">Created more than 90 days ago with no sign-in recorded.</p>
+<p class="fix"><b>What to do</b><br>Check whether these are unused joiner accounts, shared mailboxes with a sign-in enabled, or service accounts. Disable or convert them as appropriate.</p>
+<details class="maps"><summary>How this maps to common frameworks</summary><dl>
+<dt>Zero Trust</dt><dd>Use least-privilege access: accounts nobody uses should not be able to sign in.</dd>
+<dt>Cyber Essentials</dt><dd>User access control: only accounts that are needed should exist and be enabled.</dd>
+<dt>CIS-style control</dt><dd>Identity: review accounts with no recorded sign-in activity.</dd>
+</dl></details></article>
+<article class="finding Low">
+<div><span class="sev Low">Low</span><span class="fid">STALE-003</span><span class="cnt">Stale accounts &middot; 5 affected</span></div>
+<h3>Disabled accounts that still hold licences</h3>
+<p class="detail">Accounts are disabled but still have one or more licences assigned.</p>
+<p class="fix"><b>What to do</b><br>Remove the licences, once any mailbox or data retention needs are met. This reduces cost and the amount of data attached to dormant identities.</p>
+<details class="maps"><summary>How this maps to common frameworks</summary><dl>
+<dt>Zero Trust</dt><dd>Use least-privilege access: a disabled identity should not keep entitlements.</dd>
+<dt>Cyber Essentials</dt><dd>User access control: leaver processes should remove access completely.</dd>
+<dt>CIS-style control</dt><dd>Identity: tidy leaver accounts, including their licences.</dd>
+</dl></details></article>
+<h2>MFA coverage</h2>
+<div class="bar" role="img" aria-label="92.2 percent of members covered"><span style="width:92.2%"></span></div>
+<p>165 of 179 member users have at least one MFA method registered (92.2%).</p>
+<div class="kv"><div><span>Users in the report</span><span>215</span></div><div><span>Guests in the report</span><span>36</span></div><div><span>Administrators</span><span>12</span></div><div><span>Administrators without MFA</span><span>2</span></div><div><span>Members without MFA (non-admin)</span><span>12</span></div><div><span>Phone-only MFA</span><span>9</span></div><div><span>Passwordless-capable</span><span>34</span></div></div>
+<h3>Users needing attention</h3>
+<div class="tablewrap"><table><thead><tr><th>Name</th><th>User principal name</th><th>Type</th><th>Admin</th><th>Status</th><th>Methods</th></tr></thead><tbody><tr><td>Helpdesk Agent 02</td><td class="mono">helpdesk02@northwind.example</td><td>member</td><td>Yes</td><td>No MFA</td><td></td></tr><tr><td>Helpdesk Agent 03</td><td class="mono">helpdesk03@northwind.example</td><td>member</td><td>Yes</td><td>No MFA</td><td></td></tr><tr><td>Beatriz Kowalski</td><td class="mono">beatriz.kowalski2@northwind.example</td><td>member</td><td></td><td>No MFA</td><td>email</td></tr><tr><td>Bruno Gallagher</td><td class="mono">bruno.gallagher_litware.example#EXT#@northwind.example</td><td>guest</td><td></td><td>No MFA</td><td></td></tr><tr><td>Dewi Yilmaz</td><td class="mono">dewi.yilmaz_litware.example#EXT#@northwind.example</td><td>guest</td><td></td><td>No MFA</td><td></td></tr><tr><td>Dewi Yilmaz</td><td class="mono">dewi.yilmaz5@northwind.example</td><td>member</td><td></td><td>No MFA</td><td>email</td></tr><tr><td>Esme Nakamura</td><td class="mono">esme.nakamura_fabrikam.example#EXT#@northwind.example</td><td>guest</td><td></td><td>No MFA</td><td></td></tr><tr><td>Gwen Brennan</td><td class="mono">gwen.brennan4@northwind.example</td><td>member</td><td></td><td>No MFA</td><td></td></tr><tr><td>Ingrid Tanaka</td><td class="mono">ingrid.tanaka3@northwind.example</td><td>member</td><td></td><td>No MFA</td><td></td></tr><tr><td>Jamal Adeyemi</td><td class="mono">jamal.adeyemi_litware.example#EXT#@northwind.example</td><td>guest</td><td></td><td>No MFA</td><td></td></tr><tr><td>Leon Walsh</td><td class="mono">leon.walsh3@northwind.example</td><td>member</td><td></td><td>No MFA</td><td>email</td></tr><tr><td>Liam Abbott</td><td class="mono">liam.abbott4@northwind.example</td><td>member</td><td></td><td>No MFA</td><td>email</td></tr><tr><td>Maya Dlamini</td><td class="mono">maya.dlamini4@northwind.example</td><td>member</td><td></td><td>No MFA</td><td></td></tr><tr><td>Oskar Varga</td><td class="mono">oskar.varga_adatum.example#EXT#@northwind.example</td><td>guest</td><td></td><td>No MFA</td><td></td></tr><tr><td>Rosa Castillo</td><td class="mono">rosa.castillo2@northwind.example</td><td>member</td><td></td><td>No MFA</td><td>email</td></tr><tr><td>Una Xu</td><td class="mono">una.xu@northwind.example</td><td>member</td><td></td><td>No MFA</td><td></td></tr><tr><td>Wen Lopez</td><td class="mono">wen.lopez_wingtip.example#EXT#@northwind.example</td><td>guest</td><td></td><td>No MFA</td><td></td></tr><tr><td>Wen Lopez</td><td class="mono">wen.lopez3@northwind.example</td><td>member</td><td></td><td>No MFA</td><td></td></tr><tr><td>Xavier Edwards</td><td class="mono">xavier.edwards2@northwind.example</td><td>member</td><td></td><td>No MFA</td><td>email</td></tr><tr><td>Yasmin Lindqvist</td><td class="mono">yasmin.lindqvist4@northwind.example</td><td>member</td><td></td><td>No MFA</td><td></td></tr><tr><td>Amara Dubois</td><td class="mono">amara.dubois4@northwind.example</td><td>member</td><td></td><td>Phone only</td><td>mobilePhone</td></tr><tr><td>Declan Garcia</td><td class="mono">declan.garcia4@northwind.example</td><td>member</td><td></td><td>Phone only</td><td>mobilePhone</td></tr><tr><td>Esme Nakamura</td><td class="mono">esme.nakamura2@northwind.example</td><td>member</td><td></td><td>Phone only</td><td>mobilePhone</td></tr><tr><td>Hassan Iyer</td><td class="mono">hassan.iyer@northwind.example</td><td>member</td><td></td><td>Phone only</td><td>mobilePhone</td></tr><tr><td>Hiro Mensah</td><td class="mono">hiro.mensah@northwind.example</td><td>member</td><td></td><td>Phone only</td><td>mobilePhone</td></tr><tr><td>Jamal Adeyemi</td><td class="mono">jamal.adeyemi2@northwind.example</td><td>member</td><td></td><td>Phone only</td><td>mobilePhone</td></tr><tr><td>Mei Hughes</td><td class="mono">mei.hughes@northwind.example</td><td>member</td><td></td><td>Phone only</td><td>mobilePhone</td></tr><tr><td>Priya Choi</td><td class="mono">priya.choi3@northwind.example</td><td>member</td><td></td><td>Phone only</td><td>mobilePhone</td></tr><tr><td>Sven Jensen</td><td class="mono">sven.jensen4@northwind.example</td><td>member</td><td></td><td>Phone only</td><td>mobilePhone</td></tr></tbody></table></div>
+<p class="small">The Graph registration report does not include disabled users.</p>
+<h2>Stale accounts</h2><p class="small">Threshold: no sign-in for more than 90 days. 185 member accounts checked.</p>
+<div class="kv"><div><span>No recent sign-in</span><span>11</span></div><div><span>Never signed in</span><span>4</span></div><div><span>Disabled but licensed</span><span>5</span></div><div><span>Flagged accounts holding a licence</span><span>20</span></div></div>
+<div class="tablewrap"><table><thead><tr><th>Name</th><th>User principal name</th><th>Category</th><th>Last sign-in</th><th>Days</th><th>Licences</th></tr></thead><tbody><tr><td>Farid Moreau</td><td class="mono">farid.moreau5@northwind.example</td><td>Disabled but licensed</td><td>2026-03-15</td><td class="num">241</td><td>SPE_E3</td></tr><tr><td>Grace Fofana</td><td class="mono">grace.fofana5@northwind.example</td><td>Disabled but licensed</td><td>2026-05-05</td><td class="num">190</td><td>SPE_E3</td></tr><tr><td>Ingrid Tanaka</td><td class="mono">ingrid.tanaka5@northwind.example</td><td>Disabled but licensed</td><td>2026-05-27</td><td class="num">168</td><td>SPE_F1</td></tr><tr><td>Jamal Adeyemi</td><td class="mono">jamal.adeyemi5@northwind.example</td><td>Disabled but licensed</td><td>2026-06-02</td><td class="num">162</td><td>SPE_E3</td></tr><tr><td>Hiro Mensah</td><td class="mono">hiro.mensah5@northwind.example</td><td>Disabled but licensed</td><td>2026-07-19</td><td class="num">115</td><td>SPE_E3</td></tr><tr><td>Elif Ferreira</td><td class="mono">elif.ferreira5@northwind.example</td><td>Never signed in</td><td>None recorded</td><td class="num"></td><td>SPE_E3</td></tr><tr><td>Dewi Yilmaz</td><td class="mono">dewi.yilmaz5@northwind.example</td><td>Never signed in</td><td>None recorded</td><td class="num"></td><td>SPE_E3</td></tr><tr><td>Callum Rahman</td><td class="mono">callum.rahman5@northwind.example</td><td>Never signed in</td><td>None recorded</td><td class="num"></td><td>SPE_F1</td></tr><tr><td>Beatriz Kowalski</td><td class="mono">beatriz.kowalski5@northwind.example</td><td>Never signed in</td><td>None recorded</td><td class="num"></td><td>SPE_E3</td></tr><tr><td>Maya Dlamini</td><td class="mono">maya.dlamini4@northwind.example</td><td>No recent sign-in</td><td>2026-01-07</td><td class="num">308</td><td>SPE_E3</td></tr><tr><td>Isla Banerjee</td><td class="mono">isla.banerjee4@northwind.example</td><td>No recent sign-in</td><td>2026-01-18</td><td class="num">297</td><td>SPE_E3</td></tr><tr><td>Felix Underhill</td><td class="mono">felix.underhill4@northwind.example</td><td>No recent sign-in</td><td>2026-01-19</td><td class="num">296</td><td>SPE_E3</td></tr><tr><td>Esme Nakamura</td><td class="mono">esme.nakamura4@northwind.example</td><td>No recent sign-in</td><td>2026-01-31</td><td class="num">284</td><td>SPE_F1</td></tr><tr><td>Amara Dubois</td><td class="mono">amara.dubois5@northwind.example</td><td>No recent sign-in</td><td>2026-02-16</td><td class="num">268</td><td>SPE_E3</td></tr><tr><td>Kavya Petrov</td><td class="mono">kavya.petrov4@northwind.example</td><td>No recent sign-in</td><td>2026-04-03</td><td class="num">222</td><td>SPE_F1</td></tr><tr><td>Jonas Ivanov</td><td class="mono">jonas.ivanov4@northwind.example</td><td>No recent sign-in</td><td>2026-04-14</td><td class="num">211</td><td>SPE_E3</td></tr><tr><td>Leon Walsh</td><td class="mono">leon.walsh4@northwind.example</td><td>No recent sign-in</td><td>2026-05-05</td><td class="num">190</td><td>SPE_E3</td></tr><tr><td>Gwen Brennan</td><td class="mono">gwen.brennan4@northwind.example</td><td>No recent sign-in</td><td>2026-06-21</td><td class="num">143</td><td>SPE_E3, POWER_BI_PRO</td></tr><tr><td>Hassan Iyer</td><td class="mono">hassan.iyer4@northwind.example</td><td>No recent sign-in</td><td>2026-07-09</td><td class="num">125</td><td>SPE_E3</td></tr><tr><td>Nico Khan</td><td class="mono">nico.khan4@northwind.example</td><td>No recent sign-in</td><td>2026-07-25</td><td class="num">109</td><td>SPE_E3</td></tr></tbody></table></div>
+<h2>Privileged role holders</h2>
+<div class="kv"><div><span>Global Administrators (distinct users)</span><span>8</span></div><div><span>Permanent (excl. emergency accounts)</span><span>5</span></div><div><span>Eligible only through PIM</span><span>1</span></div><div><span>Users with standing high privilege</span><span>13</span></div><div><span>Groups holding roles</span><span>1</span></div><div><span>Applications holding roles</span><span>1</span></div><div><span>PIM data available</span><span>Yes</span></div></div>
+<div class="tablewrap"><table><thead><tr><th>Role</th><th>Holder</th><th>Type</th><th>How held</th><th>Via group</th><th>Note</th></tr></thead><tbody><tr><td>Application Administrator</td><td>northwind-provisioning-automation</td><td>servicePrincipal</td><td>Permanent</td><td></td><td></td></tr><tr><td>Cloud Application Administrator</td><td>Beatriz Kowalski</td><td>user (guest)</td><td>Permanent</td><td></td><td></td></tr><tr><td>Conditional Access Administrator</td><td>Ewan Sinclair (security)</td><td>user</td><td>Eligible</td><td></td><td></td></tr><tr><td>Exchange Administrator</td><td>Cloud Operations Admins</td><td>group</td><td>Permanent</td><td></td><td></td></tr><tr><td>Exchange Administrator</td><td>Dewi Yilmaz</td><td>user</td><td>Permanent</td><td>Cloud Operations Admins</td><td></td></tr><tr><td>Exchange Administrator</td><td>Elif Ferreira</td><td>user</td><td>Permanent</td><td>Cloud Operations Admins</td><td></td></tr><tr><td>Exchange Administrator</td><td>Sven Jensen</td><td>user</td><td>Permanent</td><td>Cloud Operations Admins</td><td></td></tr><tr><td>Global Administrator</td><td>Idris Karimi (admin)</td><td>user</td><td>Eligible</td><td></td><td></td></tr><tr><td>Global Administrator</td><td>Emergency Access 01</td><td>user</td><td>Permanent</td><td></td><td>Emergency account</td></tr><tr><td>Global Administrator</td><td>Emergency Access 02</td><td>user</td><td>Permanent</td><td></td><td>Emergency account</td></tr><tr><td>Global Administrator</td><td>Hannah Whitcombe (admin)</td><td>user</td><td>Permanent</td><td></td><td></td></tr><tr><td>Global Administrator</td><td>Marcus Oyelaran (admin)</td><td>user</td><td>Permanent</td><td></td><td></td></tr><tr><td>Global Administrator</td><td>Priya Raman (admin)</td><td>user</td><td>Permanent</td><td></td><td></td></tr><tr><td>Global Administrator</td><td>Sofia Lindgren (admin)</td><td>user</td><td>Permanent</td><td></td><td></td></tr><tr><td>Global Administrator</td><td>Tomas Havel (admin)</td><td>user</td><td>Permanent</td><td></td><td></td></tr><tr><td>Helpdesk Administrator</td><td>Helpdesk Agent 02</td><td>user</td><td>Permanent</td><td></td><td></td></tr><tr><td>Helpdesk Administrator</td><td>Helpdesk Agent 03</td><td>user</td><td>Permanent</td><td></td><td></td></tr><tr><td>Helpdesk Administrator</td><td>Helpdesk Agent 01</td><td>user</td><td>Time-bound</td><td></td><td></td></tr><tr><td>Privileged Role Administrator</td><td>Idris Karimi (admin)</td><td>user</td><td>Eligible</td><td></td><td></td></tr><tr><td>Security Administrator</td><td>Noor Fathima (security)</td><td>user</td><td>Active (PIM activation)</td><td></td><td></td></tr><tr><td>Security Administrator</td><td>Ewan Sinclair (security)</td><td>user</td><td>Eligible</td><td></td><td></td></tr><tr><td>Security Administrator</td><td>Noor Fathima (security)</td><td>user</td><td>Eligible</td><td></td><td></td></tr><tr><td>SharePoint Administrator</td><td>Callista Moreno (SharePoint)</td><td>user</td><td>Permanent</td><td></td><td></td></tr><tr><td>User Administrator</td><td>Former Admin (leaver)</td><td>user</td><td>Permanent</td><td></td><td>Disabled</td></tr></tbody></table></div>
+<p class="small">High-privilege roles only. The CSV lists every directory role assignment.</p>
+<h2>Guest users</h2><p class="small">Stale after 90 days without sign-in; invitations overdue after 30 days.</p>
+<div class="kv"><div><span>Total guests</span><span>36</span></div><div><span>Active</span><span>24</span></div><div><span>Stale</span><span>5</span></div><div><span>No sign-in recorded</span><span>3</span></div><div><span>Pending invitations</span><span>4</span></div><div><span>Overdue invitations</span><span>3</span></div></div>
+<p class="small">Top source domains: adatum.example (6), fabrikam.example (6), litware.example (6), proseware.example (6), tailspin.example (6)</p>
+<div class="tablewrap"><table><thead><tr><th>Name</th><th>Mail</th><th>Status</th><th>Invited</th><th>Age (days)</th><th>Last sign-in</th></tr></thead><tbody><tr><td>Esme Nakamura</td><td class="mono">esme.nakamura@fabrikam.example</td><td>No sign-in recorded</td><td>2026-02-05</td><td class="num">279</td><td>None recorded</td></tr><tr><td>Felix Underhill</td><td class="mono">felix.underhill@tailspin.example</td><td>No sign-in recorded</td><td>2026-03-28</td><td class="num">228</td><td>None recorded</td></tr><tr><td>Declan Garcia</td><td class="mono">declan.garcia@proseware.example</td><td>No sign-in recorded</td><td>2026-03-31</td><td class="num">225</td><td>None recorded</td></tr><tr><td>Jonas Ivanov</td><td class="mono">jonas.ivanov@proseware.example</td><td>Pending invitation</td><td>2026-11-05</td><td class="num">6</td><td>None recorded</td></tr><tr><td>Isla Banerjee</td><td class="mono">isla.banerjee@wingtip.example</td><td>Pending invitation (overdue)</td><td>2026-05-30</td><td class="num">165</td><td>None recorded</td></tr><tr><td>Hassan Iyer</td><td class="mono">hassan.iyer@litware.example</td><td>Pending invitation (overdue)</td><td>2026-07-03</td><td class="num">131</td><td>None recorded</td></tr><tr><td>Gwen Brennan</td><td class="mono">gwen.brennan@adatum.example</td><td>Pending invitation (overdue)</td><td>2026-07-15</td><td class="num">119</td><td>None recorded</td></tr><tr><td>Yasmin Lindqvist</td><td class="mono">yasmin.lindqvist@fabrikam.example</td><td>Stale</td><td>2024-08-07</td><td class="num">826</td><td>2026-01-05</td></tr><tr><td>Chloe Novak</td><td class="mono">chloe.novak@wingtip.example</td><td>Stale</td><td>2024-09-03</td><td class="num">799</td><td>2025-10-18</td></tr><tr><td>Aisha Zielinski</td><td class="mono">aisha.zielinski@adatum.example</td><td>Stale</td><td>2025-03-24</td><td class="num">597</td><td>2026-07-04</td></tr><tr><td>Zane Sato</td><td class="mono">zane.sato@tailspin.example</td><td>Stale</td><td>2025-06-25</td><td class="num">504</td><td>2026-02-27</td></tr><tr><td>Bruno Gallagher</td><td class="mono">bruno.gallagher@litware.example</td><td>Stale</td><td>2025-08-13</td><td class="num">455</td><td>2025-11-27</td></tr></tbody></table></div>
+<h2>Conditional Access</h2>
+<p>7 policies: 5 enforced, 1 report-only, 1 disabled.</p>
+<h3>Baseline checks</h3>
+<div class="tablewrap"><table><thead><tr><th>Check</th><th>What is checked</th><th>Result</th><th>Detail</th></tr></thead><tbody><tr><td class="mono nowrap">CA-001</td><td>MFA required for administrator roles</td><td>Pass</td><td>Covered by: CA002 Require MFA for administrator roles</td></tr><tr><td class="mono nowrap">CA-002</td><td>Legacy authentication blocked</td><td>Pass</td><td>Covered by: CA001 Block legacy authentication</td></tr><tr><td class="mono nowrap">CA-003</td><td>MFA required for all users</td><td>Gap</td><td>No enforced policy found. Present but not enforcing: CA003 Require MFA for all users (enabledForReportingButNotEnforced).</td></tr><tr><td class="mono nowrap">CA-006</td><td>MFA required for guests and external users</td><td>Pass</td><td>Covered by: CA004 Require MFA for guests and external users</td></tr></tbody></table></div>
+<h3>Policies</h3>
+<div class="tablewrap"><table><thead><tr><th>Policy</th><th>State</th><th>Users</th><th>Apps</th><th>Grant</th><th>Exclusions</th></tr></thead><tbody><tr><td>CA001 Block legacy authentication</td><td>enabled</td><td>All users</td><td>All cloud apps</td><td>block</td><td class="num">1</td></tr><tr><td>CA002 Require MFA for administrator roles</td><td>enabled</td><td>7 admin roles</td><td>All cloud apps</td><td>mfa</td><td class="num">1</td></tr><tr><td>CA003 Require MFA for all users</td><td>enabledForReportingButNotEnforced</td><td>All users</td><td>All cloud apps</td><td>mfa</td><td class="num">2</td></tr><tr><td>CA004 Require MFA for guests and external users</td><td>enabled</td><td>Guests and external users</td><td>All cloud apps</td><td>mfa</td><td class="num">0</td></tr><tr><td>CA005 Require compliant device for Microsoft 365</td><td>enabled</td><td>All users</td><td>Office365</td><td>compliantDevice</td><td class="num">1</td></tr><tr><td>CA006 Block sign-in from unapproved countries</td><td>disabled</td><td>All users</td><td>All cloud apps</td><td>block</td><td class="num">1</td></tr><tr><td>CA007 Require MFA for medium and high sign-in risk</td><td>enabled</td><td>All users</td><td>All cloud apps</td><td>mfa</td><td class="num">1</td></tr></tbody></table></div>
+<p class="small">These checks read policy settings. They do not simulate sign-ins. Use the What If tool in Entra to test specific scenarios.</p>
+<footer><p><b>Read-only.</b> This tool only reads from Microsoft Graph. It makes no changes to your tenant, and this file was created locally. Nothing was sent anywhere by the module.</p>
+<p>Scopes requested: <span class="mono">User.Read.All, AuditLog.Read.All, RoleManagement.Read.Directory, Policy.Read.All, GroupMember.Read.All, LicenseAssignment.Read.All</span></p>
+<p>Limitations: signInActivity needs Entra ID P1 or P2 and can be empty for accounts with no recorded sign-in; the MFA registration report excludes disabled users; PIM data needs Entra ID P2 or Governance; Conditional Access checks are heuristics. See docs/interpreting-results.md.</p></footer>
+</main></body></html>
+

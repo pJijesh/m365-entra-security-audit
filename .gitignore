@@ -1,0 +1,22 @@
+# Audit output contains tenant data. Never commit it.
+audit-output/
+demo-output/
+*.csv
+conditional-access-policies.json
+m365-entra-audit-report.html
+
+# Pester and analyser output
+testResults.xml
+coverage.xml
+TestResults/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# Editors and operating systems
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
