@@ -1,5 +1,7 @@
 # M365 and Entra ID Security Audit
 
+![M365 and Entra ID Security Audit: project banner](docs/images/banner.png)
+
 [![CI](https://github.com/pJijesh/m365-entra-security-audit/actions/workflows/ci.yml/badge.svg)](https://github.com/pJijesh/m365-entra-security-audit/actions/workflows/ci.yml)
 [![Licence: MIT](https://img.shields.io/badge/licence-MIT-blue.svg)](LICENSE)
 [![PowerShell 7+](https://img.shields.io/badge/PowerShell-7%2B-5391FE?logo=powershell&logoColor=white)](https://learn.microsoft.com/powershell/scripting/install/installing-powershell)

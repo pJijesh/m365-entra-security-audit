@@ -1,0 +1,21 @@
+cff-version: 1.2.0
+message: "If you use this repository, please cite it using the metadata below."
+title: "M365 and Entra ID Security Audit"
+abstract: "Read-only PowerShell module that audits Microsoft 365 and Entra ID: MFA, stale accounts, privileged roles, guests and Conditional Access."
+type: software
+authors:
+  - family-names: "Puliyappottammal"
+    given-names: "Jijesh"
+repository-code: "https://github.com/pJijesh/m365-entra-security-audit"
+url: "https://github.com/pJijesh/m365-entra-security-audit"
+license: MIT
+version: 1.0.0
+date-released: "2026-11-11"
+keywords:
+  - entra-id
+  - identity
+  - microsoft-365
+  - microsoft-graph
+  - powershell
+  - security-audit
+  - zero-trust
