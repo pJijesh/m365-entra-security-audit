@@ -6,15 +6,12 @@ All notable changes to this project are recorded here. The format follows
 
 ## [Unreleased]
 
-### Added
-
-- Community health files: security policy, code of conduct, issue forms and a pull request template.
-- Citation metadata (`CITATION.cff`) so the repository can be cited from GitHub.
-- Dependabot configuration for GitHub Actions.
-
-## [1.0.0] - 2026-11-11
+## [1.0.0] - 2026-11-12
 
 ### Added
 
 - First public release: read-only PowerShell module that audits Microsoft 365 and Entra ID: MFA, stale accounts, privileged roles, guests and Conditional Access.
 - See the README for scope, what has and has not been verified, and the roadmap.
+- Community health files: security policy, code of conduct, issue forms and a pull request template.
+- Citation metadata (`CITATION.cff`) so the repository can be cited from GitHub.
+- Dependabot configuration for GitHub Actions.
